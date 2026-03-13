@@ -512,7 +512,7 @@
     function setLoading(prefix, on) {
       document.getElementById(`${prefix}-loading`).style.display = on ? 'block' : 'none';
       document.getElementById(`${prefix}-btn`).disabled = on;
-      document.getElementById(`${prefix}-error`).style.display = 'none';
+      if (on) document.getElementById(`${prefix}-error`).style.display = 'none';
     }
 
     function showError(prefix, msg) {
