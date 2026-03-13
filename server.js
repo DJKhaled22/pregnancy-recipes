@@ -48,7 +48,7 @@ app.post('/api/recipe', async (req, res) => {
   let prompt = `Generate one pregnancy-safe ${category} recipe for a first-trimester meal. Assume standard pantry staples are always available (salt, pepper, olive oil, butter, garlic, onion, common dried herbs and spices like oregano, cumin, paprika, cinnamon, etc.) — include these freely in the recipe.`;
 
   if (niceIngredients && niceIngredients.trim()) {
-    prompt += ` The user also has these ingredients they'd like to use if they fit naturally: ${niceIngredients}. Incorporate them where they suit the dish, but don't force them in if they don't work.`;
+    prompt += ` You must include all of the following ingredients in the recipe: ${niceIngredients}. These are required — do not omit any of them.`;
   }
 
   prompt += ` Return valid JSON in this exact format:
