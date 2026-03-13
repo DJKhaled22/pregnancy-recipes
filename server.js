@@ -13,8 +13,12 @@ const SYSTEM_PROMPT = `You are a pregnancy nutrition assistant specialising in f
 
 function extractJSON(text) {
   // Strip markdown code fences if present
-  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-  return JSON.parse(cleaned);
+  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  // Find the first { or [ and last } or ] to extract just the JSON
+  const start = cleaned.search(/[{[]/);
+  const end = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'));
+  if (start === -1 || end === -1) throw new Error('No JSON found in response: ' + cleaned.slice(0, 100));
+  return JSON.parse(cleaned.slice(start, end + 1));
 }
 
 app.get('/', (req, res) => {
@@ -57,7 +61,7 @@ app.post('/api/recipe', async (req, res) => {
     res.json(json);
   } catch (err) {
     console.error('Recipe error:', err);
-    res.status(500).json({ error: 'Failed to generate recipe. Please try again.' });
+    res.status(500).json({ error: err.message || 'Failed to generate recipe. Please try again.' });
   }
 });
 
@@ -82,7 +86,7 @@ app.post('/api/snacks', async (req, res) => {
     res.json(json);
   } catch (err) {
     console.error('Snacks error:', err);
-    res.status(500).json({ error: 'Failed to generate snack ideas. Please try again.' });
+    res.status(500).json({ error: err.message || 'Failed to generate snack ideas. Please try again.' });
   }
 });
 
