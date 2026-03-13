@@ -84,73 +84,74 @@
       font-weight: 600;
     }
 
-    .label-hint {
-      font-weight: 400;
-      color: #9a9a8a;
-      font-size: 0.82rem;
-      margin-left: 0.4rem;
+    /* Category selector */
+    .category-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 0;
     }
 
-    /* Tag input */
-    .tag-input-wrapper {
+    .category-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 1rem 0.5rem;
+      border: 2px solid #ddd8cc;
+      border-radius: 12px;
+      background: #fdfaf6;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: #5a5a4a;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+
+    .category-btn .cat-emoji {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .category-btn:hover {
+      border-color: #8aaa8a;
+      background: #f2f8f2;
+    }
+
+    .category-btn.selected {
+      border-color: #5a7a5a;
+      background: #e8f2e8;
+      color: #3a5a3a;
+      font-weight: 600;
+    }
+
+    /* Nice to have field */
+    .nice-to-have {
+      display: none;
+      margin-top: 1.25rem;
+    }
+
+    .nice-to-have.visible {
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
       border: 1.5px solid #ddd8cc;
       border-radius: 10px;
-      background: #fdfaf6;
-      padding: 0.5rem 0.75rem;
-      cursor: text;
-      transition: border-color 0.2s;
-      min-height: 52px;
-    }
-
-    .tag-input-wrapper:focus-within { border-color: #8aaa8a; }
-
-    .tags-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
-    .tag {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      background: #d4e8d4;
-      color: #3a5a3a;
-      border-radius: 20px;
-      padding: 0.2rem 0.6rem 0.2rem 0.75rem;
-      font-size: 0.85rem;
-      font-family: inherit;
-    }
-
-    .tag-remove {
-      background: none;
-      border: none;
-      color: #5a7a5a;
-      cursor: pointer;
-      font-size: 1rem;
-      line-height: 1;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      opacity: 0.7;
-    }
-
-    .tag-remove:hover { opacity: 1; }
-
-    .tag-text-input {
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 0.93rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
       font-family: inherit;
       color: #3d3d3d;
-      flex: 1;
-      min-width: 140px;
-      padding: 0.25rem 0;
+      background: #fdfaf6;
+      resize: vertical;
+      min-height: 72px;
+      outline: none;
+      transition: border-color 0.2s;
     }
 
-    .tag-text-input::placeholder { color: #b0aa9a; }
+    textarea:focus { border-color: #8aaa8a; }
+    textarea::placeholder { color: #b0aa9a; }
 
     .checkbox-row {
       display: flex;
@@ -381,7 +382,6 @@
       display: inline-block;
     }
 
-    /* Snack intro text */
     .snack-intro {
       text-align: center;
       color: #7a7a6a;
@@ -390,7 +390,6 @@
       margin-bottom: 0.25rem;
     }
 
-    /* hidden */
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
   </style>
@@ -399,7 +398,7 @@
   <div class="container">
     <header>
       <h1>What's in your kitchen?</h1>
-      <p>Tell us what you have and we'll suggest something nourishing<br>for you and your little one.</p>
+      <p>Pick a category and we'll suggest something nourishing<br>for you and your little one.</p>
     </header>
 
     <div class="tabs">
@@ -410,17 +409,25 @@
     <!-- Meal mode -->
     <div id="meal-panel" class="mode-panel active">
       <div class="card">
-        <label>Your ingredients <span class="label-hint">— type one and press Enter</span></label>
-        <div class="tag-input-wrapper" onclick="document.getElementById('tag-input').focus()">
-          <div class="tags-container" id="tags-container">
-            <input
-              type="text"
-              id="tag-input"
-              class="tag-text-input"
-              placeholder="e.g. chicken, then press Enter"
-              onkeydown="handleTagKey(event)"
-            />
-          </div>
+        <label>What are you cooking with?</label>
+        <div class="category-grid">
+          <button class="category-btn" onclick="selectCategory('Chicken')" id="cat-Chicken">
+            <span class="cat-emoji">🍗</span> Chicken
+          </button>
+          <button class="category-btn" onclick="selectCategory('Beef')" id="cat-Beef">
+            <span class="cat-emoji">🥩</span> Beef
+          </button>
+          <button class="category-btn" onclick="selectCategory('Fish')" id="cat-Fish">
+            <span class="cat-emoji">🐟</span> Fish
+          </button>
+          <button class="category-btn" onclick="selectCategory('Vegetarian')" id="cat-Vegetarian">
+            <span class="cat-emoji">🥦</span> Vegetarian
+          </button>
+        </div>
+
+        <div class="nice-to-have" id="nice-to-have">
+          <label for="nice-ingredients">Nice to have ingredients <span style="font-weight:400;color:#9a9a8a;font-size:0.82rem;">— optional</span></label>
+          <textarea id="nice-ingredients" placeholder="e.g. avocado, spinach, lemon"></textarea>
         </div>
 
         <div class="checkbox-row">
@@ -462,45 +469,15 @@
   </div>
 
   <script>
-    // --- Tag input logic ---
-    const tags = [];
+    let selectedCategory = null;
 
-    function handleTagKey(e) {
-      if (e.key === 'Enter' || e.key === ',') {
-        e.preventDefault();
-        const val = e.target.value.trim().replace(/,$/, '');
-        if (val) addTag(val);
-        e.target.value = '';
-      } else if (e.key === 'Backspace' && e.target.value === '' && tags.length) {
-        removeTag(tags.length - 1);
-      }
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('cat-' + cat).classList.add('selected');
+      document.getElementById('nice-to-have').classList.add('visible');
     }
 
-    function addTag(text) {
-      tags.push(text);
-      renderTags();
-    }
-
-    function removeTag(i) {
-      tags.splice(i, 1);
-      renderTags();
-    }
-
-    function renderTags() {
-      const container = document.getElementById('tags-container');
-      const input = document.getElementById('tag-input');
-      // Remove old tag elements
-      container.querySelectorAll('.tag').forEach(el => el.remove());
-      // Re-insert tags before the input
-      tags.forEach((t, i) => {
-        const tag = document.createElement('span');
-        tag.className = 'tag';
-        tag.innerHTML = `${esc(t)}<button class="tag-remove" onclick="removeTag(${i})" type="button">×</button>`;
-        container.insertBefore(tag, input);
-      });
-    }
-
-    // --- Mode switch ---
     function switchMode(mode) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
         b.classList.toggle('active', (mode === 'meal' && i === 0) || (mode === 'snacks' && i === 1));
@@ -521,18 +498,13 @@
       el.style.display = 'block';
     }
 
-    // --- Recipe ---
     async function generateRecipe(differentMeal) {
-      // Also check if there's a partially-typed ingredient not yet tagged
-      const inputEl = document.getElementById('tag-input');
-      if (inputEl.value.trim()) addTag(inputEl.value.trim()), inputEl.value = '';
-
-      if (tags.length === 0) {
-        showError('meal', 'Please add at least one ingredient.');
+      if (!selectedCategory) {
+        showError('meal', 'Please select a category first.');
         return;
       }
 
-      const ingredients = tags.join(', ');
+      const niceIngredients = document.getElementById('nice-ingredients').value.trim();
       const freezerFriendly = document.getElementById('freezer-friendly').checked;
 
       setLoading('meal', true);
@@ -542,7 +514,7 @@
         const res = await fetch('/api/recipe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ingredients, freezerFriendly, differentMeal }),
+          body: JSON.stringify({ category: selectedCategory, niceIngredients, freezerFriendly, differentMeal }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Server error');
@@ -564,7 +536,7 @@
           <div class="recipe-name">${esc(r.name)}</div>
           ${r.type ? `<span class="type-badge">${esc(r.type)}</span>` : ''}
         </div>
-        ${pills ? `<div class="section-label">Ingredients used</div><div class="ingredient-pills">${pills}</div>` : ''}
+        ${pills ? `<div class="section-label">Ingredients</div><div class="ingredient-pills">${pills}</div>` : ''}
         <div class="section-label">Instructions</div>
         <ol class="instructions-list">${steps}</ol>
         ${r.nutritionNote ? `<div class="nutrition-note">🌿 ${esc(r.nutritionNote)}</div>` : ''}
@@ -573,7 +545,6 @@
       document.getElementById('meal-output').style.display = 'block';
     }
 
-    // --- Snacks ---
     async function generateSnacks() {
       setLoading('snack', true);
       document.getElementById('snack-output').style.display = 'none';

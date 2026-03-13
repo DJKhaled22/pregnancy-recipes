@@ -39,13 +39,19 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/recipe', async (req, res) => {
-  const { ingredients, freezerFriendly, differentMeal } = req.body;
+  const { category, niceIngredients, freezerFriendly, differentMeal } = req.body;
 
-  if (!ingredients || !ingredients.trim()) {
-    return res.status(400).json({ error: 'Ingredients are required.' });
+  if (!category) {
+    return res.status(400).json({ error: 'A category is required.' });
   }
 
-  let prompt = `Using some (not necessarily all) of these ingredients: ${ingredients}, generate one pregnancy-safe recipe for a first-trimester meal. Assume standard pantry staples are always available (salt, pepper, olive oil, butter, garlic, onion, common dried herbs and spices like oregano, cumin, paprika, cinnamon, etc.) — include these freely in the recipe without requiring the user to list them. Return valid JSON in this exact format:
+  let prompt = `Generate one pregnancy-safe ${category} recipe for a first-trimester meal. Assume standard pantry staples are always available (salt, pepper, olive oil, butter, garlic, onion, common dried herbs and spices like oregano, cumin, paprika, cinnamon, etc.) — include these freely in the recipe.`;
+
+  if (niceIngredients && niceIngredients.trim()) {
+    prompt += ` The user also has these ingredients they'd like to use if they fit naturally: ${niceIngredients}. Incorporate them where they suit the dish, but don't force them in if they don't work.`;
+  }
+
+  prompt += ` Return valid JSON in this exact format:
 {
   "name": "...",
   "type": "soup / stir-fry / etc",
