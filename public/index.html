@@ -153,6 +153,26 @@
     textarea:focus { border-color: #8aaa8a; }
     textarea::placeholder { color: #b0aa9a; }
 
+    select {
+      width: 100%;
+      border: 1.5px solid #ddd8cc;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #3d3d3d;
+      background: #fdfaf6;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8a7a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      transition: border-color 0.2s;
+    }
+
+    select:focus { border-color: #8aaa8a; }
+
     .checkbox-row {
       display: flex;
       align-items: center;
@@ -426,7 +446,26 @@
         </div>
 
         <div class="nice-to-have" id="nice-to-have">
-          <label for="nice-ingredients">Ingredients to include <span style="font-weight:400;color:#9a9a8a;font-size:0.82rem;">— optional, but all listed will be used</span></label>
+          <label for="meal-type" style="margin-top:1.25rem;">Meal type <span style="font-weight:400;color:#9a9a8a;font-size:0.82rem;">— optional</span></label>
+          <select id="meal-type">
+            <option value="">No preference</option>
+            <option>Salad</option>
+            <option>Sandwich</option>
+            <option>Stew</option>
+            <option>Curry</option>
+            <option>Pasta</option>
+            <option>Rice dish</option>
+            <option>Stir-fry</option>
+            <option>Casserole</option>
+            <option>Grill</option>
+            <option>Roast</option>
+            <option>Wrap</option>
+            <option>Pizza</option>
+            <option>Burger</option>
+            <option>Dessert</option>
+          </select>
+
+          <label for="nice-ingredients" style="margin-top:1.25rem;">Ingredients to include <span style="font-weight:400;color:#9a9a8a;font-size:0.82rem;">— optional, but all listed will be used</span></label>
           <textarea id="nice-ingredients" placeholder="e.g. avocado, spinach, lemon"></textarea>
         </div>
 
@@ -505,6 +544,7 @@
       }
 
       const niceIngredients = document.getElementById('nice-ingredients').value.trim();
+      const mealType = document.getElementById('meal-type').value;
       const freezerFriendly = document.getElementById('freezer-friendly').checked;
 
       setLoading('meal', true);
@@ -514,7 +554,7 @@
         const res = await fetch('/api/recipe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ category: selectedCategory, niceIngredients, freezerFriendly, differentMeal }),
+          body: JSON.stringify({ category: selectedCategory, mealType, niceIngredients, freezerFriendly, differentMeal }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Server error');

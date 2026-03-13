@@ -39,13 +39,14 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/recipe', async (req, res) => {
-  const { category, niceIngredients, freezerFriendly, differentMeal } = req.body;
+  const { category, mealType, niceIngredients, freezerFriendly, differentMeal } = req.body;
 
   if (!category) {
     return res.status(400).json({ error: 'A category is required.' });
   }
 
-  let prompt = `Generate one pregnancy-safe ${category} recipe for a first-trimester meal. Assume standard pantry staples are always available (salt, pepper, olive oil, butter, garlic, onion, common dried herbs and spices like oregano, cumin, paprika, cinnamon, etc.) — include these freely in the recipe.`;
+  const dish = mealType ? `${category} ${mealType}` : `${category} dish`;
+  let prompt = `Generate one pregnancy-safe ${dish} for a first-trimester meal. Assume standard pantry staples are always available (salt, pepper, olive oil, butter, garlic, onion, common dried herbs and spices like oregano, cumin, paprika, cinnamon, etc.) — include these freely in the recipe.`;
 
   if (niceIngredients && niceIngredients.trim()) {
     prompt += ` You must include all of the following ingredients in the recipe: ${niceIngredients}. These are required — do not omit any of them.`;
