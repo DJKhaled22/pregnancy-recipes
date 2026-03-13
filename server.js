@@ -21,6 +21,19 @@ function extractJSON(text) {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 
+app.get('/api/test', async (req, res) => {
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 20,
+      messages: [{ role: 'user', content: 'Say hi' }],
+    });
+    res.json({ ok: true, response: message.content[0].text });
+  } catch (err) {
+    res.json({ ok: false, error: err.message, type: err.constructor.name });
+  }
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
