@@ -84,24 +84,73 @@
       font-weight: 600;
     }
 
-    textarea {
-      width: 100%;
-      border: 1.5px solid #ddd8cc;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
-      font-size: 0.95rem;
-      font-family: inherit;
-      color: #3d3d3d;
-      background: #fdfaf6;
-      resize: vertical;
-      min-height: 90px;
-      outline: none;
-      transition: border-color 0.2s;
+    .label-hint {
+      font-weight: 400;
+      color: #9a9a8a;
+      font-size: 0.82rem;
+      margin-left: 0.4rem;
     }
 
-    textarea:focus { border-color: #8aaa8a; }
+    /* Tag input */
+    .tag-input-wrapper {
+      border: 1.5px solid #ddd8cc;
+      border-radius: 10px;
+      background: #fdfaf6;
+      padding: 0.5rem 0.75rem;
+      cursor: text;
+      transition: border-color 0.2s;
+      min-height: 52px;
+    }
 
-    textarea::placeholder { color: #b0aa9a; }
+    .tag-input-wrapper:focus-within { border-color: #8aaa8a; }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .tag {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: #d4e8d4;
+      color: #3a5a3a;
+      border-radius: 20px;
+      padding: 0.2rem 0.6rem 0.2rem 0.75rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+
+    .tag-remove {
+      background: none;
+      border: none;
+      color: #5a7a5a;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      opacity: 0.7;
+    }
+
+    .tag-remove:hover { opacity: 1; }
+
+    .tag-text-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.93rem;
+      font-family: inherit;
+      color: #3d3d3d;
+      flex: 1;
+      min-width: 140px;
+      padding: 0.25rem 0;
+    }
+
+    .tag-text-input::placeholder { color: #b0aa9a; }
 
     .checkbox-row {
       display: flex;
@@ -332,6 +381,15 @@
       display: inline-block;
     }
 
+    /* Snack intro text */
+    .snack-intro {
+      text-align: center;
+      color: #7a7a6a;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 0.25rem;
+    }
+
     /* hidden */
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -352,8 +410,18 @@
     <!-- Meal mode -->
     <div id="meal-panel" class="mode-panel active">
       <div class="card">
-        <label for="meal-ingredients">Ingredients you have, separated by commas</label>
-        <textarea id="meal-ingredients" placeholder="e.g. chicken, spinach, eggs, lemon, garlic"></textarea>
+        <label>Your ingredients <span class="label-hint">— type one and press Enter</span></label>
+        <div class="tag-input-wrapper" onclick="document.getElementById('tag-input').focus()">
+          <div class="tags-container" id="tags-container">
+            <input
+              type="text"
+              id="tag-input"
+              class="tag-text-input"
+              placeholder="e.g. chicken, then press Enter"
+              onkeydown="handleTagKey(event)"
+            />
+          </div>
+        </div>
 
         <div class="checkbox-row">
           <input type="checkbox" id="freezer-friendly" />
@@ -377,10 +445,8 @@
     <!-- Snack mode -->
     <div id="snacks-panel" class="mode-panel">
       <div class="card">
-        <label for="snack-ingredients">Add ingredients you have (optional)</label>
-        <textarea id="snack-ingredients" placeholder="e.g. banana, yogurt, almonds — or leave blank for ideas"></textarea>
-
-        <button class="btn-primary" id="snack-btn" onclick="generateSnacks()">Get snack ideas →</button>
+        <p class="snack-intro">Get 4–5 random pregnancy-safe snack ideas — no ingredients needed.</p>
+        <button class="btn-primary" id="snack-btn" onclick="generateSnacks()">Surprise me 🎲</button>
 
         <div class="loading" id="snack-loading">
           <span class="spinner"></span> Finding great snack ideas...
@@ -390,11 +456,51 @@
 
       <div class="output" id="snack-output">
         <div class="snack-grid" id="snack-grid"></div>
+        <button class="btn-secondary" style="margin-top:1rem" onclick="generateSnacks()">Try different snacks →</button>
       </div>
     </div>
   </div>
 
   <script>
+    // --- Tag input logic ---
+    const tags = [];
+
+    function handleTagKey(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const val = e.target.value.trim().replace(/,$/, '');
+        if (val) addTag(val);
+        e.target.value = '';
+      } else if (e.key === 'Backspace' && e.target.value === '' && tags.length) {
+        removeTag(tags.length - 1);
+      }
+    }
+
+    function addTag(text) {
+      tags.push(text);
+      renderTags();
+    }
+
+    function removeTag(i) {
+      tags.splice(i, 1);
+      renderTags();
+    }
+
+    function renderTags() {
+      const container = document.getElementById('tags-container');
+      const input = document.getElementById('tag-input');
+      // Remove old tag elements
+      container.querySelectorAll('.tag').forEach(el => el.remove());
+      // Re-insert tags before the input
+      tags.forEach((t, i) => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.innerHTML = `${esc(t)}<button class="tag-remove" onclick="removeTag(${i})" type="button">×</button>`;
+        container.insertBefore(tag, input);
+      });
+    }
+
+    // --- Mode switch ---
     function switchMode(mode) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
         b.classList.toggle('active', (mode === 'meal' && i === 0) || (mode === 'snacks' && i === 1));
@@ -415,12 +521,18 @@
       el.style.display = 'block';
     }
 
+    // --- Recipe ---
     async function generateRecipe(differentMeal) {
-      const ingredients = document.getElementById('meal-ingredients').value.trim();
-      if (!ingredients) {
-        showError('meal', 'Please enter at least one ingredient.');
+      // Also check if there's a partially-typed ingredient not yet tagged
+      const inputEl = document.getElementById('tag-input');
+      if (inputEl.value.trim()) addTag(inputEl.value.trim()), inputEl.value = '';
+
+      if (tags.length === 0) {
+        showError('meal', 'Please add at least one ingredient.');
         return;
       }
+
+      const ingredients = tags.join(', ');
       const freezerFriendly = document.getElementById('freezer-friendly').checked;
 
       setLoading('meal', true);
@@ -433,7 +545,7 @@
           body: JSON.stringify({ ingredients, freezerFriendly, differentMeal }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Unknown error');
+        if (!res.ok) throw new Error(data.error || 'Server error');
         renderRecipe(data);
       } catch (err) {
         showError('meal', err.message || 'Something went wrong. Please try again.');
@@ -461,9 +573,8 @@
       document.getElementById('meal-output').style.display = 'block';
     }
 
+    // --- Snacks ---
     async function generateSnacks() {
-      const ingredients = document.getElementById('snack-ingredients').value.trim();
-
       setLoading('snack', true);
       document.getElementById('snack-output').style.display = 'none';
 
@@ -471,10 +582,10 @@
         const res = await fetch('/api/snacks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ingredients }),
+          body: JSON.stringify({ ingredients: '' }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Unknown error');
+        if (!res.ok) throw new Error(data.error || 'Server error');
         renderSnacks(data);
       } catch (err) {
         showError('snack', err.message || 'Something went wrong. Please try again.');

@@ -64,11 +64,7 @@ app.post('/api/recipe', async (req, res) => {
 app.post('/api/snacks', async (req, res) => {
   const { ingredients } = req.body;
 
-  const ingredientLine = ingredients && ingredients.trim()
-    ? `Using some or all of these ingredients: ${ingredients}`
-    : 'Using general first-trimester staples';
-
-  const prompt = `${ingredientLine} (or general first-trimester staples if the list is short), suggest 4–5 no-cook snack ideas safe and beneficial for early pregnancy. Return valid JSON as an array in this exact format:
+  const prompt = `Suggest 4–5 varied, no-cook snack ideas that are safe and beneficial for early pregnancy. Mix it up — include something sweet, something savoury, and something crunchy. Return valid JSON as an array in this exact format:
 [
   { "name": "...", "ingredients": ["..."], "why": "brief benefit" }
 ]`;
