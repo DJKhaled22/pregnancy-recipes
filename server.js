@@ -45,7 +45,7 @@ app.post('/api/recipe', async (req, res) => {
     return res.status(400).json({ error: 'Ingredients are required.' });
   }
 
-  let prompt = `Using some (not necessarily all) of these ingredients: ${ingredients}, generate one pregnancy-safe recipe for a first-trimester meal. Return valid JSON in this exact format:
+  let prompt = `Using some (not necessarily all) of these ingredients: ${ingredients}, generate one pregnancy-safe recipe for a first-trimester meal. Assume standard pantry staples are always available (salt, pepper, olive oil, butter, garlic, onion, common dried herbs and spices like oregano, cumin, paprika, cinnamon, etc.) — include these freely in the recipe without requiring the user to list them. Return valid JSON in this exact format:
 {
   "name": "...",
   "type": "soup / stir-fry / etc",
