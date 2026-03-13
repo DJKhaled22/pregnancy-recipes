@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nourish — Pregnancy Recipe Helper</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #fdf8f2;
+      color: #3d3d3d;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #5a7a5a;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      color: #7a7a6a;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      background: #ede8df;
+      border-radius: 12px;
+      padding: 0.25rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #7a7a6a;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: #5a7a5a;
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: #5a5a4a;
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1.5px solid #ddd8cc;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #3d3d3d;
+      background: #fdfaf6;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: #8aaa8a; }
+
+    textarea::placeholder { color: #b0aa9a; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #5a7a5a;
+      cursor: pointer;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      font-weight: 400;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.85rem;
+      background: #5a7a5a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: #4a6a4a; }
+    .btn-primary:disabled { background: #a0b8a0; cursor: not-allowed; }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem 0 1rem;
+      color: #8a8a7a;
+      font-size: 0.95rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #dde8dd;
+      border-top-color: #5a7a5a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      background: #fff3f3;
+      border: 1px solid #f5c5c5;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      color: #b05050;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    /* Recipe output */
+    .output { display: none; margin-top: 1.5rem; }
+
+    .recipe-card {
+      background: #f8f5f0;
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .recipe-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .recipe-name {
+      font-size: 1.3rem;
+      color: #3d3d3d;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .type-badge {
+      background: #d4e8d4;
+      color: #3a5a3a;
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8a8a7a;
+      margin-bottom: 0.5rem;
+    }
+
+    .ingredient-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .pill {
+      background: #fff;
+      border: 1px solid #ddd8cc;
+      border-radius: 20px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.85rem;
+      color: #5a5a4a;
+    }
+
+    .instructions-list {
+      list-style: none;
+      counter-reset: step-counter;
+      margin-bottom: 1.25rem;
+    }
+
+    .instructions-list li {
+      counter-increment: step-counter;
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+      font-size: 0.93rem;
+    }
+
+    .instructions-list li::before {
+      content: counter(step-counter);
+      background: #5a7a5a;
+      color: #fff;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .nutrition-note {
+      background: #e8f2e8;
+      border-left: 3px solid #5a7a5a;
+      border-radius: 0 8px 8px 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      color: #3a5a3a;
+      line-height: 1.6;
+    }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: transparent;
+      color: #5a7a5a;
+      border: 1.5px solid #5a7a5a;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover { background: #5a7a5a; color: #fff; }
+
+    /* Snack output */
+    .snack-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .snack-card {
+      background: #f8f5f0;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+
+    .snack-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #3d3d3d;
+      margin-bottom: 0.35rem;
+    }
+
+    .snack-ingredients {
+      font-size: 0.85rem;
+      color: #7a7a6a;
+      margin-bottom: 0.4rem;
+    }
+
+    .snack-why {
+      font-size: 0.85rem;
+      color: #3a5a3a;
+      background: #e8f2e8;
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      display: inline-block;
+    }
+
+    /* hidden */
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>What's in your kitchen?</h1>
+      <p>Tell us what you have and we'll suggest something nourishing<br>for you and your little one.</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchMode('meal')">🍽 Meal</button>
+      <button class="tab-btn" onclick="switchMode('snacks')">🥑 Snacks</button>
+    </div>
+
+    <!-- Meal mode -->
+    <div id="meal-panel" class="mode-panel active">
+      <div class="card">
+        <label for="meal-ingredients">Ingredients you have, separated by commas</label>
+        <textarea id="meal-ingredients" placeholder="e.g. chicken, spinach, eggs, lemon, garlic"></textarea>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="freezer-friendly" />
+          <label for="freezer-friendly">Make it freezer-friendly 🧊</label>
+        </div>
+
+        <button class="btn-primary" id="meal-btn" onclick="generateRecipe(false)">Generate recipe →</button>
+
+        <div class="loading" id="meal-loading">
+          <span class="spinner"></span> Thinking up something delicious...
+        </div>
+        <div class="error-msg" id="meal-error"></div>
+      </div>
+
+      <div class="output" id="meal-output">
+        <div class="recipe-card" id="recipe-card"></div>
+        <button class="btn-secondary" onclick="generateRecipe(true)">Try a different meal →</button>
+      </div>
+    </div>
+
+    <!-- Snack mode -->
+    <div id="snacks-panel" class="mode-panel">
+      <div class="card">
+        <label for="snack-ingredients">Add ingredients you have (optional)</label>
+        <textarea id="snack-ingredients" placeholder="e.g. banana, yogurt, almonds — or leave blank for ideas"></textarea>
+
+        <button class="btn-primary" id="snack-btn" onclick="generateSnacks()">Get snack ideas →</button>
+
+        <div class="loading" id="snack-loading">
+          <span class="spinner"></span> Finding great snack ideas...
+        </div>
+        <div class="error-msg" id="snack-error"></div>
+      </div>
+
+      <div class="output" id="snack-output">
+        <div class="snack-grid" id="snack-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchMode(mode) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (mode === 'meal' && i === 0) || (mode === 'snacks' && i === 1));
+      });
+      document.getElementById('meal-panel').classList.toggle('active', mode === 'meal');
+      document.getElementById('snacks-panel').classList.toggle('active', mode === 'snacks');
+    }
+
+    function setLoading(prefix, on) {
+      document.getElementById(`${prefix}-loading`).style.display = on ? 'block' : 'none';
+      document.getElementById(`${prefix}-btn`).disabled = on;
+      document.getElementById(`${prefix}-error`).style.display = 'none';
+    }
+
+    function showError(prefix, msg) {
+      const el = document.getElementById(`${prefix}-error`);
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    async function generateRecipe(differentMeal) {
+      const ingredients = document.getElementById('meal-ingredients').value.trim();
+      if (!ingredients) {
+        showError('meal', 'Please enter at least one ingredient.');
+        return;
+      }
+      const freezerFriendly = document.getElementById('freezer-friendly').checked;
+
+      setLoading('meal', true);
+      document.getElementById('meal-output').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/recipe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ingredients, freezerFriendly, differentMeal }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Unknown error');
+        renderRecipe(data);
+      } catch (err) {
+        showError('meal', err.message || 'Something went wrong. Please try again.');
+      } finally {
+        setLoading('meal', false);
+      }
+    }
+
+    function renderRecipe(r) {
+      const card = document.getElementById('recipe-card');
+      const pills = (r.ingredientsUsed || []).map(i => `<span class="pill">${esc(i)}</span>`).join('');
+      const steps = (r.instructions || []).map(s => `<li>${esc(s)}</li>`).join('');
+
+      card.innerHTML = `
+        <div class="recipe-header">
+          <div class="recipe-name">${esc(r.name)}</div>
+          ${r.type ? `<span class="type-badge">${esc(r.type)}</span>` : ''}
+        </div>
+        ${pills ? `<div class="section-label">Ingredients used</div><div class="ingredient-pills">${pills}</div>` : ''}
+        <div class="section-label">Instructions</div>
+        <ol class="instructions-list">${steps}</ol>
+        ${r.nutritionNote ? `<div class="nutrition-note">🌿 ${esc(r.nutritionNote)}</div>` : ''}
+      `;
+
+      document.getElementById('meal-output').style.display = 'block';
+    }
+
+    async function generateSnacks() {
+      const ingredients = document.getElementById('snack-ingredients').value.trim();
+
+      setLoading('snack', true);
+      document.getElementById('snack-output').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/snacks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ingredients }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Unknown error');
+        renderSnacks(data);
+      } catch (err) {
+        showError('snack', err.message || 'Something went wrong. Please try again.');
+      } finally {
+        setLoading('snack', false);
+      }
+    }
+
+    function renderSnacks(snacks) {
+      const grid = document.getElementById('snack-grid');
+      grid.innerHTML = snacks.map(s => `
+        <div class="snack-card">
+          <div class="snack-name">${esc(s.name)}</div>
+          <div class="snack-ingredients">${(s.ingredients || []).map(esc).join(', ')}</div>
+          <span class="snack-why">✨ ${esc(s.why)}</span>
+        </div>
+      `).join('');
+      document.getElementById('snack-output').style.display = 'block';
+    }
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
